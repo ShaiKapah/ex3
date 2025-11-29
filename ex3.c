@@ -198,7 +198,6 @@ int humanChoose(char board[][COLS]) {
 }
 int computerChoose(char board[][COLS], char mytoken, char othertoken){
     int OrderRule[COLS];
-    int centerLeft,centerRight;
     if(COLS%2){
         int center = COLS/2;
         int i = 0;
