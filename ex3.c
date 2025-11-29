@@ -18,27 +18,27 @@
 #define HUMAN 1
 #define COMPUTER 2
 
-int isColumnFull(char[][COLS], int, int, int);
+int isColumnFull(char[][COLS], int);
 
-int isBoardFull(char[][COLS], int, int);
+int isBoardFull(char[][COLS]);
 
 int isInBounds(int, int, int, int);
 
 /* Return index of row where token will land, or -1 if column full */
-int getFreeRow(char[][COLS], int, int, int);
+int getFreeRow(char[][COLS], int);
 
 /* Place token in column (0-based). Return row index or -1 if illegal */
-int makeMove(char[][COLS], int, int, int, char);
+int makeMove(char[][COLS], int, char);
 
-int checkVictory(char[][COLS], int, int, int, int, char);
+int checkVictory(char[][COLS], int, int, char);
 
 /* Human player: asks repeatedly until a valid non-full column is chosen (0-based) */
-int humanChoose(char[][COLS], int, int);
+int humanChoose(char[][COLS]);
 
 /* Computer*/
-int computerChoose(char[][COLS], int, int, char, char);
+int computerChoose(char[][COLS], char, char);
 
-void runConnectFour(char[][COLS], int, int, int, int);
+void runConnectFour(char[][COLS], int, int);
 
 void initBoard(char[][COLS], int, int);
 
@@ -46,7 +46,7 @@ void printBoard(char[][COLS], int, int);
 
 int getPlayerType(int);
 
-int CheckSequenceOfThree(char[][COLS], int[COLS], int, int, int, int, char);
+int CheckSequenceOfThree(char[][COLS], int, int, char);
 
 
 int main() {
@@ -56,7 +56,7 @@ int main() {
     int p2Type = getPlayerType(2);
     initBoard(board, ROWS, COLS);
     printBoard(board, ROWS, COLS);
-    runConnectFour(board, ROWS, COLS, p1Type, p2Type);
+    runConnectFour(board, p1Type, p2Type);
     return 0;
 }
 void initBoard(char board[][COLS], int rows, int cols) {
@@ -99,37 +99,37 @@ int getPlayerType(int playerNumber) {
         while (getchar() != '\n'); // clear rest of input
     }
 }
-int isColumnFull(char board[][COLS], int rows, int cols, int col){
+int isColumnFull(char board[][COLS], int col){
     for(int r = 0; r < ROWS; r++){
         if(board[r][col] == EMPTY)
             return 0;
     }
     return 1;
 }
-int isBoardFull(char board[][COLS], int rows, int cols){
+int isBoardFull(char board[][COLS]){
     for(int c = 0; c < COLS; c++){
-        if(!isColumnFull(board,ROWS,COLS,c))
+        if(!isColumnFull(board,c))
             return 0;
     }
     return 1;
 }
-int getFreeRow(char board[][COLS], int rows, int cols, int col){
+int getFreeRow(char board[][COLS], int col){
     for(int r = ROWS -1; r >=0; r--){
         if(board[r][col] == EMPTY)
             return r;
     }
     return -1;
 }
-int makeMove(char board[][COLS], int rows, int cols, int col, char token){
+int makeMove(char board[][COLS], int col, char token){
     if (col < 0 || col >= COLS) 
         return -1;
-    int row = getFreeRow(board, ROWS, COLS, col);
+    int row = getFreeRow(board, col);
     if (row == -1) 
         return -1;
     board[row][col] = token;
     return row;
 }
-void runConnectFour(char board[][COLS], int rows, int cols, int p1Type, int p2Type){
+void runConnectFour(char board[][COLS], int p1Type, int p2Type){
     int PlayerNumber = 1;
     int ptype;
     char token;
@@ -140,28 +140,28 @@ void runConnectFour(char board[][COLS], int rows, int cols, int p1Type, int p2Ty
 
         int ChosenColumn = -1;
         if(ptype == HUMAN){
-            ChosenColumn = humanChoose(board,ROWS,COLS);
+            ChosenColumn = humanChoose(board);
         }
         else{
-            ChosenColumn = computerChoose(board,ROWS,COLS,token,(token == TOKEN_P1) ? TOKEN_P2 : TOKEN_P1);
+            ChosenColumn = computerChoose(board,token,(token == TOKEN_P1) ? TOKEN_P2 : TOKEN_P1);
             printf("Computer chose column %d\n", ChosenColumn + 1);
         }
 
-        int RowChanged = makeMove(board,ROWS,COLS,ChosenColumn,token);
+        int RowChanged = makeMove(board,ChosenColumn,token);
         printBoard(board,ROWS,COLS);
 
-        if(checkVictory(board,ROWS,COLS,RowChanged,ChosenColumn,token)){
+        if(checkVictory(board,RowChanged,ChosenColumn,token)){
             printf("Player %d (%c) wins!",PlayerNumber, token);
             break;
         }
-        if(isBoardFull(board,ROWS,COLS)){
+        if(isBoardFull(board)){
             printf("Board full and no winner. It's a tie!");
             break;
         }
         PlayerNumber = (PlayerNumber == 1) ? 2 : 1;
     }
 }
-int humanChoose(char board[][COLS], int rows, int cols) {
+int humanChoose(char board[][COLS]) {
     int col = 0;
     char c;
 
@@ -186,7 +186,7 @@ int humanChoose(char board[][COLS], int rows, int cols) {
             continue;
         }
 
-        if(isColumnFull(board, ROWS, COLS, col - 1)) {
+        if(isColumnFull(board, col - 1)) {
             printf("Column %d is full. Choose another column.\n", col);
             continue;
         }
@@ -196,7 +196,7 @@ int humanChoose(char board[][COLS], int rows, int cols) {
 
     return col - 1; 
 }
-int computerChoose(char board[][COLS], int rows, int cols, char mytoken, char othertoken){
+int computerChoose(char board[][COLS], char mytoken, char othertoken){
     int OrderRule[COLS];
     int centerLeft,centerRight;
     if(COLS%2){
@@ -230,11 +230,11 @@ int computerChoose(char board[][COLS], int rows, int cols, char mytoken, char ot
     //check winning move
     for(int i = 0; i < COLS; i++){
         int c = OrderRule[i];
-        if(isColumnFull(board,ROWS,COLS,c))
+        if(isColumnFull(board,c))
             continue;
-        int r = getFreeRow(board,ROWS,COLS,c);
+        int r = getFreeRow(board,c);
         board[r][c] = mytoken;
-        int win = checkVictory(board,ROWS,COLS,r,c,mytoken);
+        int win = checkVictory(board,r,c,mytoken);
         board[r][c] = EMPTY;
         if(win)
             return c;
@@ -242,11 +242,11 @@ int computerChoose(char board[][COLS], int rows, int cols, char mytoken, char ot
     //block op win
     for(int i = 0; i < COLS; i++){
         int c = OrderRule[i];
-        if(isColumnFull(board,ROWS,COLS,c))
+        if(isColumnFull(board,c))
             continue;
-        int r = getFreeRow(board,ROWS,COLS,c);
+        int r = getFreeRow(board,c);
         board[r][c] = othertoken;
-        int win = checkVictory(board,ROWS,COLS,r,c,othertoken);
+        int win = checkVictory(board,r,c,othertoken);
         board[r][c] = EMPTY;
         if(win)
             return c;
@@ -254,23 +254,23 @@ int computerChoose(char board[][COLS], int rows, int cols, char mytoken, char ot
     //create 3
     for(int i = 0; i < COLS; i++){
         int c = OrderRule[i];
-        if(isColumnFull(board,ROWS,COLS,c))
+        if(isColumnFull(board,c))
             continue;
-        int r = getFreeRow(board,ROWS,COLS,c);
+        int r = getFreeRow(board,c);
         board[r][c] = mytoken;
-        int maxseq = CheckSequenceOfThree(board, OrderRule, ROWS, COLS, r, c, mytoken);
+        int maxseq = CheckSequenceOfThree(board, r, c, mytoken);
         board[r][c] = EMPTY;
         if(maxseq)
             return c;
     }
     //block 3
-     for(int i = 0; i < COLS; i++){
+    for(int i = 0; i < COLS; i++){
         int c = OrderRule[i];
-        if(isColumnFull(board,ROWS,COLS,c))
+        if(isColumnFull(board,c))
             continue;
-        int r = getFreeRow(board,ROWS,COLS,c);
+        int r = getFreeRow(board,c);
         board[r][c] = othertoken;
-        int maxseq = CheckSequenceOfThree(board, OrderRule, ROWS, COLS, r, c, othertoken);
+        int maxseq = CheckSequenceOfThree(board, r, c, othertoken);
         board[r][c] = EMPTY;
         if(maxseq)
             return c;
@@ -278,13 +278,13 @@ int computerChoose(char board[][COLS], int rows, int cols, char mytoken, char ot
 
     for(int i = 0; i<COLS; i++){
         int c = OrderRule[i];
-        if(!isColumnFull(board,ROWS,COLS,c))
+        if(!isColumnFull(board,c))
             return c;
     }
     return 0;
 }
-    int checkVictory(char board[][COLS], int rows, int cols, int lastRow, int lastCol, char token) {
-     if (lastRow < 0 || lastCol < 0) return 0;
+int checkVictory(char board[][COLS], int lastRow, int lastCol, char token) {
+    if (lastRow < 0 || lastCol < 0) return 0;
     const int moveoptions[4][2] = {{0, 1},{1, 0}, {1, 1},{1, -1}};
 
     for (int d = 0; d < 4; d++) {
@@ -305,7 +305,7 @@ int computerChoose(char board[][COLS], int rows, int cols, char mytoken, char ot
     }
     return 0;
 }
-int CheckSequenceOfThree(char board[][COLS], int OrderRule[COLS], int rows, int cols, int lastRow, int lastCol, char token){
+int CheckSequenceOfThree(char board[][COLS], int lastRow, int lastCol, char token){
     if (lastRow < 0 || lastCol < 0) return 0;
     const int moveoptions[4][2] = {{0, 1},{1, 0}, {1, 1},{1, -1}};
 
@@ -326,6 +326,5 @@ int CheckSequenceOfThree(char board[][COLS], int OrderRule[COLS], int rows, int 
         if (count == 3) return 1;
     }
     return 0;
-
-} 
+}
 
