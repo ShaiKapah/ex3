@@ -163,38 +163,58 @@ void runConnectFour(char board[][COLS], int p1Type, int p2Type){
 }
 int humanChoose(char board[][COLS]) {
     int col = 0;
+    int sign;
+    int digitFound;
     char c;
 
-    while(1) {
+    while (1) {
         printf("Enter column (1-%d): ", COLS);
         col = 0;
+        sign = 1;
+        digitFound = 0;
 
         do {
-            scanf("%c", &c);
-        } while(c == ' ' || c == '\t' || c == '\n');
+            if (scanf("%c", &c) != 1) c = '\n';
+        } while (c == ' ' || c == '\t' || c == '\n');
 
-        while(c >= '0' && c <= '9') {
-            col = col * 10 + (c - '0');
-            scanf("%c", &c);
+        if (c == '-') {
+            sign = -1;
+            if (scanf("%c", &c) != 1) c = '\n';
+        } else if (c == '+') {
+            if (scanf("%c", &c) != 1) c = '\n';
         }
-        if(c != '\n' && c != ' ' && c != '\t') {
-            printf("Invalid input. Please enter a number.\n");
+
+        while (c >= '0' && c <= '9') {
+            digitFound = 1;
+            col = col * 10 + (c - '0');
+            if (scanf("%c", &c) != 1) { c = '\n'; break; }
+        }
+
+        if (c != '\n' && c != ' ' && c != '\t') {
+            while (c != '\n' && scanf("%c", &c) == 1);
+            printf("Invalid input. Enter a number.\n");
             continue;
         }
-        if(col < 1 || col > COLS) {
+
+        if (!digitFound) {
+            printf("Invalid input. Enter a number.\n");
+            continue;
+        }
+
+        col *= sign;
+
+        if (col < 1 || col > COLS) {
             printf("Invalid column. Choose between 1 and %d.\n", COLS);
             continue;
         }
 
-        if(isColumnFull(board, col - 1)) {
+        if (isColumnFull(board, col - 1)) {
             printf("Column %d is full. Choose another column.\n", col);
             continue;
         }
 
-        break;
+        return col - 1;
     }
-
-    return col - 1; 
 }
 int computerChoose(char board[][COLS], char mytoken, char othertoken){
     int OrderRule[COLS];
