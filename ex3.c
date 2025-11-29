@@ -46,7 +46,7 @@ void printBoard(char[][COLS], int, int);
 
 int getPlayerType(int);
 
-int CheckSequenceOfThree(char[][COLS], char[COLS], int, int, int, int, char);
+int CheckSequenceOfThree(char[][COLS], int[COLS], int, int, int, int, char);
 
 
 int main() {
@@ -99,7 +99,28 @@ int getPlayerType(int playerNumber) {
         while (getchar() != '\n'); // clear rest of input
     }
 }
-int makeMove(char board[][COLS], int ROWS, int COLS, int col, char token){
+int isColumnFull(char board[][COLS], int rows, int cols, int col){
+    for(int r = 0; r < ROWS; r++){
+        if(board[r][col] == EMPTY)
+            return 0;
+    }
+    return 1;
+}
+int isBoardFull(char board[][COLS], int rows, int cols){
+    for(int c = 0; c < COLS; c++){
+        if(!isColumnFull(board,ROWS,COLS,c))
+            return 0;
+    }
+    return 1;
+}
+int getFreeRow(char board[][COLS], int rows, int cols, int col){
+    for(int r = ROWS -1; r >=0; r--){
+        if(board[r][col] == EMPTY)
+            return r;
+    }
+    return -1;
+}
+int makeMove(char board[][COLS], int rows, int cols, int col, char token){
     if (col < 0 || col >= COLS) 
         return -1;
     int row = getFreeRow(board, ROWS, COLS, col);
@@ -108,7 +129,7 @@ int makeMove(char board[][COLS], int ROWS, int COLS, int col, char token){
     board[row][col] = token;
     return row;
 }
-void runConnectFour(char board[][COLS], int ROWS, int COLS, int p1Type, int p2Type){
+void runConnectFour(char board[][COLS], int rows, int cols, int p1Type, int p2Type){
     int PlayerNumber = 1;
     int ptype;
     char token;
@@ -123,7 +144,7 @@ void runConnectFour(char board[][COLS], int ROWS, int COLS, int p1Type, int p2Ty
         }
         else{
             ChosenColumn = computerChoose(board,ROWS,COLS,token,(token == TOKEN_P1) ? TOKEN_P2 : TOKEN_P1);
-            printf("Computer chose column %d\n", ChosenColumn);
+            printf("Computer chose column %d\n", ChosenColumn + 1);
         }
 
         int RowChanged = makeMove(board,ROWS,COLS,ChosenColumn,token);
@@ -140,8 +161,8 @@ void runConnectFour(char board[][COLS], int ROWS, int COLS, int p1Type, int p2Ty
         PlayerNumber = (PlayerNumber == 1) ? 2 : 1;
     }
 }
-int humanChoose(char board[][COLS], int ROWS, int COLS) {
-     int col = 0;
+int humanChoose(char board[][COLS], int rows, int cols) {
+    int col = 0;
     char c;
 
     while(1) {
@@ -156,7 +177,10 @@ int humanChoose(char board[][COLS], int ROWS, int COLS) {
             col = col * 10 + (c - '0');
             scanf("%c", &c);
         }
-
+        if(c != '\n' && c != ' ' && c != '\t') {
+            printf("Invalid input. Please enter a number.\n");
+            continue;
+        }
         if(col < 1 || col > COLS) {
             printf("Invalid column. Choose between 1 and %d.\n", COLS);
             continue;
@@ -172,7 +196,7 @@ int humanChoose(char board[][COLS], int ROWS, int COLS) {
 
     return col - 1; 
 }
-int computerChoose(char board[][COLS], int ROWS, int COLS, char mytoken, char othertoken){
+int computerChoose(char board[][COLS], int rows, int cols, char mytoken, char othertoken){
     int OrderRule[COLS];
     int centerLeft,centerRight;
     if(COLS%2){
@@ -259,7 +283,7 @@ int computerChoose(char board[][COLS], int ROWS, int COLS, char mytoken, char ot
     }
     return 0;
 }
-    int checkVictory(char board[][COLS], int ROWS, int COLS, int lastRow, int lastCol, char token) {
+    int checkVictory(char board[][COLS], int rows, int cols, int lastRow, int lastCol, char token) {
      if (lastRow < 0 || lastCol < 0) return 0;
     const int moveoptions[4][2] = {{0, 1},{1, 0}, {1, 1},{1, -1}};
 
@@ -281,7 +305,7 @@ int computerChoose(char board[][COLS], int ROWS, int COLS, char mytoken, char ot
     }
     return 0;
 }
-int CheckSequenceOfThree(char board[][COLS], char OrderRule[COLS], int ROWS, int COLS, int lastRow, int lastCol, char token){
+int CheckSequenceOfThree(char board[][COLS], int OrderRule[COLS], int rows, int cols, int lastRow, int lastCol, char token){
     if (lastRow < 0 || lastCol < 0) return 0;
     const int moveoptions[4][2] = {{0, 1},{1, 0}, {1, 1},{1, -1}};
 
@@ -302,5 +326,6 @@ int CheckSequenceOfThree(char board[][COLS], char OrderRule[COLS], int ROWS, int
         if (count == 3) return 1;
     }
     return 0;
+
 } 
 
